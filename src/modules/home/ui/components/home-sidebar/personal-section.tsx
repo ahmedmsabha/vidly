@@ -9,6 +9,7 @@ import { SidebarGroupLabel } from "@/components/ui/sidebar";
 import { HistoryIcon, ListVideoIcon, ThumbsUpIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth, useClerk } from "@clerk/nextjs";
 
 const items = [
   {
@@ -33,6 +34,8 @@ const items = [
 
 export function PersonalSection() {
   const pathname = usePathname();
+  const clerk = useClerk();
+  const { isSignedIn } = useAuth();
 
   const isActive = (path: string) => pathname === path;
   return (
@@ -46,7 +49,12 @@ export function PersonalSection() {
                 tooltip={item.title}
                 asChild
                 isActive={isActive(item.href)}
-                onClick={() => {}}
+                onClick={(e) => {
+                  if (item.auth && !isSignedIn) {
+                    e.preventDefault();
+                    return clerk.openSignIn({ redirectUrl: item.href });
+                  }
+                }}
               >
                 <Link href={item.href} className="flex items-center gap-4">
                   <item.icon />

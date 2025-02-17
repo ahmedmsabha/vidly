@@ -1,3 +1,4 @@
+"use client";
 import { SidebarContent } from "@/components/ui/sidebar";
 import { Sidebar } from "@/components/ui/sidebar";
 import React from "react";
