@@ -2,6 +2,7 @@
   "name": "vidly",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev --turbopack",
     "dev:all": "concurrently \"pnpm dev\" \"pnpm dev:webhook\"",
@@ -10,7 +11,8 @@
     "start": "next start",
     "lint": "next lint",
     "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "seed": "node -r dotenv/config --loader ts-node/esm --experimental-specifier-resolution=node src/scripts/seed-categories.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.11.3",
@@ -89,6 +91,8 @@
     "eslint-config-next": "15.1.6",
     "postcss": "^8",
     "tailwindcss": "^4.0.0",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
     "tsx": "^4.19.2",
     "typescript": "^5"
   }
