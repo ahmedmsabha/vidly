@@ -1,9 +1,11 @@
+import { StudioView } from "@/modules/studio/ui/views/studio-view";
+import { HydrateClient } from "@/trpc/server";
 import React from "react";
 
-export default function StudioPage() {
+export default async function StudioPage() {
   return (
-    <div>
-      <h1>Studio</h1>
-    </div>
+    <HydrateClient>
+      <StudioView />
+    </HydrateClient>
   );
 }
