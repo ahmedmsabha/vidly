@@ -5,9 +5,10 @@ import { trpc } from "@/trpc/client";
 import { toast } from "sonner";
 import { ResponsizeDialog } from "@/components/responsize-dialog";
 import { StudioUploader } from "./studio-uploader";
-
+import { useRouter } from "next/navigation";
 export function StudioUploadModel() {
   const utils = trpc.useUtils();
+  const router = useRouter();
   const create = trpc.videos.create.useMutation({
     onSuccess: () => {
       toast.success("Video created");
@@ -17,6 +18,17 @@ export function StudioUploadModel() {
       toast.error(error.message);
     },
   });
+
+  const handleUploadSuccess = () => {
+    if (!create.data?.video.id) {
+      toast.error("Failed to create video");
+      return;
+    }
+
+    create.reset();
+    router.push(`/studio/videos/${create.data.video.id}`);
+  };
+
   return (
     <>
       <ResponsizeDialog
