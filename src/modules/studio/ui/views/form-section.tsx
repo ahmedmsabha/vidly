@@ -50,6 +50,8 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { THUMBNAIL_FALLBACK } from "@/modules/videos/types";
 import { ThumbnailUploadModel } from "../components/thumbnail-upload-model";
+import { ThumbnailGenerateModel } from "../components/thumbnail-generate-model";
+import { Skeleton } from "@/components/ui/skeleton";
 export function FormSection({ videoId }: { videoId: string }) {
   return (
     <Suspense fallback={<FormSectionSkeleton />}>
@@ -61,7 +63,60 @@ export function FormSection({ videoId }: { videoId: string }) {
 }
 
 function FormSectionSkeleton() {
-  return <div>FormSectionSkeleton</div>;
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-6">
+        <div className="space-y-2">
+          <Skeleton className="h-7 w-32" />
+          <Skeleton className="h-4 w-40" />
+        </div>
+        <Skeleton className="h-9 w-24" />
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <div className="space-y-8 lg:col-span-3">
+          <div className="space-y-2">
+            <Skeleton className="h-5 w-16" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-5 w-24" />
+            <Skeleton className="h-[220px] w-full" />
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-5 w-20" />
+            <Skeleton className="h-[84px] w-[153px]" />
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-5 w-20" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+          <div className="flex flex-col gap-y-8 lg:col-span-2">
+            <div className="flex flex-col gap-4 bg-[#F9F9F9] rounded-xl overflow-hidden">
+              <Skeleton className="aspect-video" />
+              <div className="px-4 py-4 space-y-6">
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-5 w-full" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-5 w-32" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-5 w-32" />
+                </div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-20" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function FormSectionSuspense({ videoId }: { videoId: string }) {
@@ -71,6 +126,8 @@ function FormSectionSuspense({ videoId }: { videoId: string }) {
   const [categories] = trpc.categories.getMany.useSuspenseQuery();
 
   const [thumbnailUploadModelOpen, setThumbnailUploadModelOpen] =
+    useState(false);
+  const [thumbnailGenerateModelOpen, setThumbnailGenerateModelOpen] =
     useState(false);
 
   const update = trpc.videos.update.useMutation({
@@ -95,7 +152,7 @@ function FormSectionSuspense({ videoId }: { videoId: string }) {
     },
   });
 
-  const generateTitle = trpc.videos.generateThumbnail.useMutation({
+  const generateTitle = trpc.videos.generateTitle.useMutation({
     onSuccess: () => {
       toast.success("Background job started", {
         description: "This may take some time to complete",
@@ -117,16 +174,6 @@ function FormSectionSuspense({ videoId }: { videoId: string }) {
     },
   });
 
-  const generateThumbnail = trpc.videos.generateThumbnail.useMutation({
-    onSuccess: () => {
-      toast.success("Background job started", {
-        description: "This may take some time to complete",
-      });
-    },
-    onError: () => {
-      toast.error("Failed to generate thumbnail");
-    },
-  });
   const restoreThumbnail = trpc.videos.restoreThumbnail.useMutation({
     onSuccess: () => {
       utils.studio.getMany.invalidate();
@@ -160,6 +207,11 @@ function FormSectionSuspense({ videoId }: { videoId: string }) {
   }
   return (
     <>
+      <ThumbnailGenerateModel
+        videoId={video.id}
+        open={thumbnailGenerateModelOpen}
+        onOpenChange={setThumbnailGenerateModelOpen}
+      />
       <ThumbnailUploadModel
         videoId={video.id}
         open={thumbnailUploadModelOpen}
@@ -175,8 +227,13 @@ function FormSectionSuspense({ videoId }: { videoId: string }) {
               </p>
             </div>
             <div className="flex items-center gap-x-2">
-              <Button type="submit" disabled={update.isPending}>
-                {update.isPending ? "Saving..." : "Save"}
+              <Button
+                type="submit"
+                disabled={update.isPending || form.formState.isDirty}
+              >
+                {update.isPending || form.formState.isSubmitting
+                  ? "Saving..."
+                  : "Save"}
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -308,7 +365,7 @@ function FormSectionSuspense({ videoId }: { videoId: string }) {
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() =>
-                                generateThumbnail.mutate({ id: video.id })
+                                setThumbnailGenerateModelOpen(true)
                               }
                             >
                               <SparklesIcon className="w-4 h-4 mr-1" />
