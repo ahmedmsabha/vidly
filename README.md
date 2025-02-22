@@ -1,4 +1,4 @@
-# Vidly
+# Vidly - Youtube Clone
 
 Vidly is a video management platform built with Next.js. It allows users to upload, manage, and view video content with various features like video details management, thumbnail generation, and more.
 
