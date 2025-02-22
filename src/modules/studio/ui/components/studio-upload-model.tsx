@@ -37,7 +37,10 @@ export function StudioUploadModel() {
         onOpenChange={() => create.reset()}
       >
         {create.data?.url ? (
-          <StudioUploader endpoint={create.data.url} onSuccess={() => {}} />
+          <StudioUploader
+            endpoint={create.data.url}
+            onSuccess={handleUploadSuccess}
+          />
         ) : (
           <Loader2Icon className="animate-spin" />
         )}
