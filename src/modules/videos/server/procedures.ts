@@ -11,7 +11,7 @@ import { and, eq, getTableColumns } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { UTApi } from "uploadthing/server";
 import { workflow } from "@/lib/qstash";
-import { users } from "@/db/schema";
+import { users, videoViews  } from "@/db/schema";
 
 export const videosRouter = createTRPCRouter({
   getOne: baseProcedure
@@ -25,6 +25,7 @@ export const videosRouter = createTRPCRouter({
           user: {
             ...getTableColumns(users),
           },
+          viewCount: db.$count(videoViews, eq(videoViews.videoId, videos.id)),
         })
         .from(videos)
         .innerJoin(users, eq(videos.userId, users.id))
