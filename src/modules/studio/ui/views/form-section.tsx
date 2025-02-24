@@ -22,11 +22,12 @@ import {
   SparklesIcon,
   TrashIcon,
 } from "lucide-react";
-import { Form, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { videoUpdateSchema } from "@/db/schema";
 import type { z } from "zod";
 import {
+  Form,
   FormField,
   FormItem,
   FormLabel,
@@ -90,28 +91,28 @@ function FormSectionSkeleton() {
             <Skeleton className="h-5 w-20" />
             <Skeleton className="h-10 w-full" />
           </div>
-          <div className="flex flex-col gap-y-8 lg:col-span-2">
-            <div className="flex flex-col gap-4 bg-[#F9F9F9] rounded-xl overflow-hidden">
-              <Skeleton className="aspect-video" />
-              <div className="px-4 py-4 space-y-6">
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-20" />
-                  <Skeleton className="h-5 w-full" />
-                </div>
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-5 w-32" />
-                </div>
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-5 w-32" />
-                </div>
+        </div>
+        <div className="flex flex-col gap-y-8 lg:col-span-2">
+          <div className="flex flex-col gap-4 bg-[#F9F9F9] rounded-xl overflow-hidden">
+            <Skeleton className="aspect-video" />
+            <div className="px-4 py-4 space-y-6">
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-5 w-full" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-5 w-32" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-5 w-32" />
               </div>
             </div>
-            <div className="space-y-2">
-              <Skeleton className="h-5 w-20" />
-              <Skeleton className="h-10 w-full" />
-            </div>
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-5 w-20" />
+            <Skeleton className="h-10 w-full" />
           </div>
         </div>
       </div>
@@ -129,6 +130,12 @@ function FormSectionSuspense({ videoId }: { videoId: string }) {
     useState(false);
   const [thumbnailGenerateModelOpen, setThumbnailGenerateModelOpen] =
     useState(false);
+
+  console.log(video);
+  const form = useForm<z.infer<typeof videoUpdateSchema>>({
+    resolver: zodResolver(videoUpdateSchema),
+    defaultValues: video,
+  });
 
   const update = trpc.videos.update.useMutation({
     onSuccess: () => {
@@ -185,18 +192,13 @@ function FormSectionSuspense({ videoId }: { videoId: string }) {
     },
   });
 
-  const form = useForm<z.infer<typeof videoUpdateSchema>>({
-    resolver: zodResolver(videoUpdateSchema),
-    defaultValues: video,
-  });
-
   const onSubmit = (data: z.infer<typeof videoUpdateSchema>) => {
     void update.mutate(data);
   };
 
   const [isCopied, setIsCopied] = useState(false);
 
-  const fullUrl = `${process.env.NEXT_PUBLIC_APP_URL}/videos/${video.id}`;
+  const fullUrl = `${process.env.NEXT_PUBLIC_WEBSITE_URL}/videos/${video.id}`;
 
   async function handleCopy() {
     await navigator.clipboard.writeText(fullUrl);
@@ -229,7 +231,7 @@ function FormSectionSuspense({ videoId }: { videoId: string }) {
             <div className="flex items-center gap-x-2">
               <Button
                 type="submit"
-                disabled={update.isPending || form.formState.isDirty}
+                disabled={update.isPending || !form.formState.isDirty}
               >
                 {update.isPending || form.formState.isSubmitting
                   ? "Saving..."
@@ -260,7 +262,7 @@ function FormSectionSuspense({ videoId }: { videoId: string }) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      <div className="flex items-center gap-x-2">
+                      <div className="flex items-center gap-x-2 mb-1">
                         Title
                         <Button
                           type="button"
@@ -296,7 +298,7 @@ function FormSectionSuspense({ videoId }: { videoId: string }) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      <div className="flex items-center gap-x-2">
+                      <div className="flex items-center gap-x-2 mb-1">
                         Description
                         <Button
                           type="button"
@@ -423,11 +425,11 @@ function FormSectionSuspense({ videoId }: { videoId: string }) {
                     posterUrl={video.thumbnailUrl}
                   />
                 </div>
-                <div className="flex justify-between items-center gap-x-2">
+                <div className="flex justify-between items-center gap-x-2 p-2">
                   <div className="flex flex-col gap-y-1">
                     <p className="text-xs text-muted-foreground">Video Link</p>
                     <div className="flex items-center gap-x-2">
-                      <Link href={`videos/${video.id}`}>
+                      <Link href={`/videos/${video.id}`}>
                         <p className="text-sm line-clamp-1 text-blue-500">
                           {fullUrl}
                         </p>
@@ -446,7 +448,7 @@ function FormSectionSuspense({ videoId }: { videoId: string }) {
                   </div>
                 </div>
 
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center p-2">
                   <div className="flex flex-col gap-y-1">
                     <p className="text-muted-foreground text-xs">
                       Video status
@@ -457,7 +459,7 @@ function FormSectionSuspense({ videoId }: { videoId: string }) {
                   </div>
                 </div>
 
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center p-2">
                   <div className="flex flex-col gap-y-1">
                     <p className="text-muted-foreground text-xs">
                       Subtitles status
@@ -485,19 +487,17 @@ function FormSectionSuspense({ videoId }: { videoId: string }) {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem
-                          value="public"
-                          className="flex items-center"
-                        >
-                          <Globe2Icon className="w-4 h-4 mr-2" />
-                          Public
+                        <SelectItem value="public">
+                          <div className="flex items-center">
+                            <Globe2Icon className="w-4 h-4 mr-2" />
+                            Public
+                          </div>
                         </SelectItem>
-                        <SelectItem
-                          value="private"
-                          className="flex items-center"
-                        >
-                          <LockIcon className="w-4 h-4 mr-2" />
-                          Private
+                        <SelectItem value="private">
+                          <div className="flex items-center">
+                            <LockIcon className="w-4 h-4 mr-2" />
+                            Private
+                          </div>
                         </SelectItem>
                       </SelectContent>
                     </Select>

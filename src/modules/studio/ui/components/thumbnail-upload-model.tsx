@@ -32,6 +32,10 @@ export const ThumbnailUploadModel = ({
         endpoint="thumbnailUploader"
         input={{ videoId }}
         onClientUploadComplete={onUploadComplete}
+        onUploadError={(error: Error) => {
+          toast.error("Failed to upload thumbnail");
+          console.error(error);
+        }}
       />
     </ResponsizeDialog>
   );
