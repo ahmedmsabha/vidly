@@ -128,12 +128,13 @@ export function VideoSectionsSuspense() {
                             duration={video.duration ?? 0}
                           />
                         </div>
-                      </div>
-                      <div className="flex flex-col overflow-hidden gap-1">
-                        <p className="text-sm line-clamp-1">{video.title}</p>
-                        <p className="text-sm text-muted-foreground line-clamp-1">
-                          {video.description}
-                        </p>
+
+                        <div className="flex flex-col overflow-hidden gap-1">
+                          <p className="text-sm line-clamp-1">{video.title}</p>
+                          <p className="text-sm text-muted-foreground line-clamp-1">
+                            {video.description}
+                          </p>
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell>

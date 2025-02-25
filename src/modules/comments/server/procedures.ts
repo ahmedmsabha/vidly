@@ -6,9 +6,33 @@ import {
 } from "@/trpc/init";
 import { comments, users } from "@/db/schema";
 import { db } from "@/db";
-import { eq, getTableColumns } from "drizzle-orm";
+import { eq, getTableColumns, desc, or, lt, and, count } from "drizzle-orm";
+import { TRPCError } from "@trpc/server";
 
 export const commentsRouter = createTRPCRouter({
+  remove: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().uuid(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { id } = input;
+      const { id: userId } = ctx.user;
+
+      const [deletedComment] = await db
+        .delete(comments)
+        .where(and(eq(comments.id, id), eq(comments.userId, userId)))
+        .returning();
+
+      if (!deletedComment) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Comment not found",
+        });
+      }
+      return deletedComment;
+    }),
   create: protectedProcedure
     .input(
       z.object({
@@ -28,19 +52,69 @@ export const commentsRouter = createTRPCRouter({
       return createdComment;
     }),
   getMany: baseProcedure
-    .input(z.object({ videoId: z.string().uuid() }))
+    .input(
+      z.object({
+        videoId: z.string().uuid(),
+        cursor: z
+          .object({
+            id: z.string().uuid(),
+            updatedAt: z.date(),
+          })
+          .nullish(),
+        limit: z.number().min(1).max(100),
+      })
+    )
     .query(async ({ input }) => {
-      const { videoId } = input;
+      const { videoId, cursor, limit } = input;
 
-      const commentsList = await db
-        .select({
-          ...getTableColumns(comments),
-          user: users,
-        })
-        .from(comments)
-        .where(eq(comments.videoId, videoId))
-        .innerJoin(users, eq(comments.userId, users.id));
+      const [totalData, commentsList] = await Promise.all([
+        db
+          .select({
+            count: count(),
+          })
+          .from(comments)
+          .where(eq(comments.videoId, videoId)),
+        await db
+          .select({
+            ...getTableColumns(comments),
+            user: users,
+          })
+          .from(comments)
+          .where(
+            and(
+              eq(comments.videoId, videoId),
+              cursor
+                ? or(
+                    lt(comments.updatedAt, cursor.updatedAt),
+                    and(
+                      eq(comments.updatedAt, cursor.updatedAt),
+                      lt(comments.id, cursor.id)
+                    )
+                  )
+                : undefined
+            )
+          )
+          .innerJoin(users, eq(comments.userId, users.id))
+          .orderBy(desc(comments.updatedAt), desc(comments.id))
+          .limit(limit + 1),
+      ]);
 
-      return commentsList;
+      const hasMore = commentsList.length > limit;
+      const items = hasMore ? commentsList.slice(0, -1) : commentsList;
+
+      const lastItem = items[items.length - 1];
+
+      const nextCursor = hasMore
+        ? {
+            id: lastItem.id,
+            updatedAt: lastItem.updatedAt,
+          }
+        : null;
+
+      return {
+        totalCount: totalData[0].count,
+        items,
+        nextCursor,
+      };
     }),
 });
