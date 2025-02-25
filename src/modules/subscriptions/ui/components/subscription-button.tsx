@@ -10,7 +10,7 @@ interface SubscriptionButtonProps {
 }
 
 export default function SubscriptionButton({
-  size = "icon",
+  size = "default",
   isSubscribed,
   className,
   onClick,
