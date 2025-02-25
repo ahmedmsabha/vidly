@@ -8,7 +8,11 @@ interface VideoPlayerProps {
   onPlay?: () => void;
 }
 
-export default function VideoPlayer({
+export const VideoPlayerSkeleton = () => {
+  return <div className="rounded-xl bg-black animate-pulse aspect-video" />;
+};
+
+export function VideoPlayer({
   playbackId,
   posterUrl: thumbnailUrl,
   autoPlay,

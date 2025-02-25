@@ -3,9 +3,9 @@ import { cn } from "@/lib/utils";
 import { trpc } from "@/trpc/client";
 import React, { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import VideoPlayer from "../components/video-player";
+import { VideoPlayer, VideoPlayerSkeleton } from "../components/video-player";
 import VideoBanner from "../components/video-banner";
-import VideoTopRow from "../components/video-top-row";
+import { VideoTopRow, VideoTopRowSkeleton } from "../components/video-top-row";
 import { useAuth } from "@clerk/nextjs";
 
 export default function VideoSection({ videoId }: { videoId: string }) {
@@ -19,7 +19,12 @@ export default function VideoSection({ videoId }: { videoId: string }) {
 }
 
 function VideoSectionSkeleton() {
-  return <div>Loading...</div>;
+  return (
+    <div className="flex flex-col gap-4">
+      <VideoPlayerSkeleton />
+      <VideoTopRowSkeleton />
+    </div>
+  );
 }
 
 function VideoSectionSuspense({ videoId }: { videoId: string }) {
