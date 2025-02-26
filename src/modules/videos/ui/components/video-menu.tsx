@@ -20,7 +20,7 @@ interface VideoMenuProps {
 
 export default function VideoMenu({
   videoId,
-  variant,
+  variant = "ghost",
   onRemove,
 }: VideoMenuProps) {
   function onShare() {

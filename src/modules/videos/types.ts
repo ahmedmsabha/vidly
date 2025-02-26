@@ -4,5 +4,10 @@ import type { inferRouterOutputs } from "@trpc/server";
 
 export const THUMBNAIL_FALLBACK = placeholder;
 
+export type VideoGetOneOutput = inferRouterOutputs<
+  typeof appRouter
+>["videos"]["getOne"];
 
-export type VideoGetOneOutput = inferRouterOutputs<typeof appRouter>["videos"]["getOne"]; 
+export type VideoGetManyOutput = inferRouterOutputs<
+  typeof appRouter
+>["suggestions"]["getMany"];

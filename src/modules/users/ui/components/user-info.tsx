@@ -5,7 +5,6 @@ import {
 } from "@/components/ui/tooltip";
 import { VariantProps, cva } from "class-variance-authority";
 import { cn } from "@/lib/utils";
-
 const userInfoVariants = cva("flex items-center gap-1", {
   variants: {
     size: {
@@ -34,7 +33,7 @@ export default function UserInfo({ name, size, className }: UserInfoProps) {
           </p>
         </TooltipTrigger>
         <TooltipContent align="center" className="bg-black/70">
-          
+          <p>{name}</p>
         </TooltipContent>
       </Tooltip>
     </div>
