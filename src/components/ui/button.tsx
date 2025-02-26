@@ -21,6 +21,7 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
         searchIcon:
           "px-2 py-2.5 bg-gray-100 rounded-l-none rounded-r-full hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed",
+        tertiary: "bg-background hover:bg-blue-500/10 text-blue-500",
       },
       size: {
         default: "h-9 px-4 py-2",

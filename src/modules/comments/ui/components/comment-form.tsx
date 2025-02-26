@@ -18,10 +18,19 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 interface CommentFormProps {
   videoId: string;
+  parentId?: string;
   onSuccess?: () => void;
+  onCancel?: () => void;
+  variant?: "comment" | "reply";
 }
 
-export function CommentForm({ videoId, onSuccess }: CommentFormProps) {
+export function CommentForm({
+  videoId,
+  onSuccess,
+  onCancel,
+  parentId,
+  variant = "comment",
+}: CommentFormProps) {
   const { user } = useUser();
   const clerk = useClerk();
   const utils = trpc.useUtils();
@@ -29,6 +38,7 @@ export function CommentForm({ videoId, onSuccess }: CommentFormProps) {
   const create = trpc.comments.create.useMutation({
     onSuccess: () => {
       utils.comments.getMany.invalidate({ videoId });
+      utils.comments.getMany.invalidate({ videoId, parentId });
       form.reset();
       toast.success("Comment posted successfully");
       onSuccess?.();
@@ -48,11 +58,17 @@ export function CommentForm({ videoId, onSuccess }: CommentFormProps) {
     defaultValues: {
       content: "",
       videoId,
+      parentId,
     },
   });
 
   const onSubmit = (data: z.infer<typeof commentSchema>) => {
     create.mutate(data);
+  };
+
+  const handleCancel = () => {
+    form.reset();
+    onCancel?.();
   };
 
   return (
@@ -72,7 +88,11 @@ export function CommentForm({ videoId, onSuccess }: CommentFormProps) {
                 <FormControl>
                   <Textarea
                     {...field}
-                    placeholder="Add a comment..."
+                    placeholder={
+                      variant === "reply"
+                        ? "Reply to this comment..."
+                        : "Add a comment..."
+                    }
                     className="resize-none bg-transparent overflow-hidden min-h-0"
                   />
                 </FormControl>
@@ -81,12 +101,21 @@ export function CommentForm({ videoId, onSuccess }: CommentFormProps) {
             )}
           />
           <div className="justify-end gap-2 mt-2 flex">
+            {onCancel && (
+              <Button variant="outline" type="button" onClick={handleCancel}>
+                Cancel
+              </Button>
+            )}
             <Button
               type="submit"
               disabled={create.isPending}
               className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
-              {create.isPending ? "Posting..." : "Comment"}
+              {variant === "reply"
+                ? "Reply"
+                : create.isPending
+                ? "Posting..."
+                : "Comment"}
             </Button>
           </div>
         </div>

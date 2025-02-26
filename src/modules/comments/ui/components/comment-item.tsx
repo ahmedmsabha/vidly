@@ -13,6 +13,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import {
+  ChevronDownIcon,
+  ChevronUpIcon,
   MessageSquareIcon,
   MoreVerticalIcon,
   ThumbsDownIcon,
@@ -20,13 +22,25 @@ import {
   TrashIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { CommentForm } from "./comment-form";
+import { CommentReplies } from "./comment-replies";
+
 interface CommentItemProps {
   comment: CommentsGetManyOutput["items"][number];
+  variant?: "comment" | "reply";
 }
 
-export function CommentItem({ comment }: CommentItemProps) {
+export function CommentItem({
+  comment,
+  variant = "comment",
+}: CommentItemProps) {
   const { userId } = useAuth();
   const clerk = useClerk();
+
+  const [isReplyOpen, setIsReplyOpen] = useState(false);
+  const [isRepliesOpen, setIsRepliesOpen] = useState(false);
+
   const utils = trpc.useUtils();
   const isOwner = userId === comment.user.clerkId;
 
@@ -75,7 +89,7 @@ export function CommentItem({ comment }: CommentItemProps) {
       <div className="flex gap-4">
         <Link href={`/users/${comment.userId}`}>
           <UserAvatar
-            size="lg"
+            size={variant === "comment" ? "lg" : "sm"}
             imageUrl={comment.user.imageUrl}
             name={comment.user.name}
           />
@@ -129,30 +143,72 @@ export function CommentItem({ comment }: CommentItemProps) {
                 {comment.dislikesCount}
               </span>
             </div>
+            {variant === "comment" && (
+              <Button
+                variant="ghost"
+                size="default"
+                onClick={() => setIsReplyOpen(true)}
+              >
+                Reply
+              </Button>
+            )}
           </div>
         </div>
-        <DropdownMenu modal={false}>
-          <DropdownMenuTrigger>
-            <Button variant="ghost" size="icon" className="size-8">
-              <MoreVerticalIcon className="text-muted-foreground size-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem>
-              <MessageSquareIcon className="size-4" />
-              Reply
-            </DropdownMenuItem>
-            {isOwner && (
+        {isOwner && (
+          <DropdownMenu modal={false}>
+            <DropdownMenuTrigger>
+              <Button variant="ghost" size="sm" className="size-8">
+                <MoreVerticalIcon className="text-muted-foreground size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              {variant === "comment" && (
+                <DropdownMenuItem onClick={() => setIsReplyOpen(true)}>
+                  <MessageSquareIcon className="size-4" />
+                  Reply
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem
                 onClick={() => removeComment({ id: comment.id })}
               >
                 <TrashIcon className="size-4" />
                 Delete
               </DropdownMenuItem>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
+      {isReplyOpen && variant === "comment" && (
+        <div className="mt-2 pl-14">
+          <CommentForm
+            videoId={comment.videoId}
+            parentId={comment.id}
+            variant="reply"
+            onCancel={() => setIsReplyOpen(false)}
+            onSuccess={() => {
+              setIsReplyOpen(false);
+              setIsRepliesOpen(true);
+            }}
+          />
+        </div>
+      )}
+      {comment.repliesCount > 0 && variant === "comment" && (
+        <div className="mt-2 pl-14">
+          <Button
+            variant="tertiary"
+            size="default"
+            onClick={() => setIsRepliesOpen((prev) => !prev)}
+          >
+            {isRepliesOpen ? <ChevronUpIcon /> : <ChevronDownIcon />}
+            {comment.repliesCount} replies
+          </Button>
+        </div>
+      )}
+      {comment.repliesCount > 0 && variant === "comment" && isRepliesOpen && (
+        <div className="mt-2 pl-14">
+          <CommentReplies videoId={comment.videoId} parentId={comment.id} />
+        </div>
+      )}
     </div>
   );
 }
