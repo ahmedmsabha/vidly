@@ -100,15 +100,16 @@ export function VideoRowCard({
 
   return (
     <div className={cn(videoRowCardVariants({ size }))}>
-      <Link href={`/videos/${video.id}`}>
-        <div className={cn(thumbnailVariants({ size }))}>
-          <VideoThumbnail
-            imageUrl={video.thumbnailUrl}
-            previewUrl={video.previewUrl}
-            title={video.title}
-            duration={video.duration ?? 0}
-          />
-        </div>
+      <Link
+        href={`/videos/${video.id}`}
+        className={cn(thumbnailVariants({ size }))}
+      >
+        <VideoThumbnail
+          imageUrl={video.thumbnailUrl}
+          previewUrl={video.previewUrl}
+          title={video.title}
+          duration={video.duration ?? 0}
+        />
       </Link>
       <div className="flex-1 min-w-0">
         <div className="flex justify-between gap-2">

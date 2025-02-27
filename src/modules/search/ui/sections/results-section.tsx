@@ -63,7 +63,7 @@ function ResultsSectionSuspense({ query, categoryId }: ResultsSectionProps) {
   return (
     <>
       {isMobile ? (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 gap-y-10">
           {results.pages
             .flatMap((page) => page.items)
             .map((result) => (
@@ -71,7 +71,7 @@ function ResultsSectionSuspense({ query, categoryId }: ResultsSectionProps) {
             ))}
         </div>
       ) : (
-        <div>
+        <div className="flex flex-col gap-4">
           {results.pages
             .flatMap((page) => page.items)
             .map((result) => (
