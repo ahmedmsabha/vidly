@@ -2,7 +2,10 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 import { VideoGetManyOutput } from "@/modules/videos/types";
 import Link from "next/link";
-import { VideoThumbnail } from "@/modules/videos/ui/components/video-thumbnail";
+import {
+  VideoThumbnail,
+  VideoThumbnailSkeleton,
+} from "@/modules/videos/ui/components/video-thumbnail";
 import { UserAvatar } from "@/components/user-avatar";
 import UserInfo from "@/modules/users/ui/components/user-info";
 import {
@@ -12,6 +15,7 @@ import {
 } from "@/components/ui/tooltip";
 import VideoMenu from "./video-menu";
 import { useMemo } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 const videoRowCardVariants = cva("group flex min-w-0", {
   variants: {
     size: {
@@ -41,15 +45,47 @@ interface VideoRowCardProps extends VariantProps<typeof videoRowCardVariants> {
   onRemove?: () => void;
 }
 
-export function VideoRowCardSkelton({ size }: VideoRowCardProps) {
+export function VideoRowCardSkelton({
+  size = "default",
+}: VariantProps<typeof videoRowCardVariants>) {
   return (
     <div className={cn(videoRowCardVariants({ size }))}>
-      <div className={cn(thumbnailVariants({ size }))} />
+      <div className={cn(thumbnailVariants({ size }))}>
+        <VideoThumbnailSkeleton />
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <div className="flex justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            <Skeleton
+              className={cn("h-5 w-[40%]", size === "compact" && "h-4 w-[40%]")}
+            />
+            {size === "default" && (
+              <>
+                <Skeleton className="h-4 w-[20%] mt-1" />
+                <div className="flex items-center gap-2 my-3">
+                  <Skeleton className="size-8 rounded-full" />
+                  <Skeleton className="h-4 w-24" />
+                </div>
+              </>
+            )}
+            {size === "compact" && (
+              <>
+                <Skeleton className="h-4 w-[50%] mt-1" />
+              </>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
 
-export function VideoRowCard({ video, size, onRemove }: VideoRowCardProps) {
+export function VideoRowCard({
+  video,
+  size = "default",
+  onRemove,
+}: VideoRowCardProps) {
   const compactViews = useMemo(() => {
     return Intl.NumberFormat("en", {
       notation: "compact",

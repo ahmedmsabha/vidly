@@ -59,8 +59,13 @@ export const videosRouter = createTRPCRouter({
           ...getTableColumns(videos),
           user: {
             ...getTableColumns(users),
-            subscriberCount: db.$count(subscriptions, eq(subscriptions.creatorId, users.id)),
-            viewerSubscribed: isNotNull(viewerSubscriptions.viewerId).mapWith(Boolean),
+            subscriberCount: db.$count(
+              subscriptions,
+              eq(subscriptions.creatorId, users.id)
+            ),
+            viewerSubscribed: isNotNull(viewerSubscriptions.viewerId).mapWith(
+              Boolean
+            ),
           },
           viewCount: db.$count(videoViews, eq(videoViews.videoId, videos.id)),
           likeCount: db.$count(
@@ -82,7 +87,10 @@ export const videosRouter = createTRPCRouter({
         .from(videos)
         .innerJoin(users, eq(videos.userId, users.id))
         .leftJoin(viewerReactions, eq(viewerReactions.videoId, videos.id))
-        .leftJoin(viewerSubscriptions, eq(viewerSubscriptions.creatorId, users.id))
+        .leftJoin(
+          viewerSubscriptions,
+          eq(viewerSubscriptions.creatorId, users.id)
+        )
         .where(and(eq(videos.id, videoId)));
 
       if (!existingVideo) {
@@ -134,6 +142,69 @@ export const videosRouter = createTRPCRouter({
         body: { userId, videoId, prompt },
       });
       return workflowRunId;
+    }),
+  revalidate: protectedProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      const { id } = input;
+      const {
+        user: { id: userId },
+      } = ctx;
+
+      const [existingVideo] = await db
+        .select()
+        .from(videos)
+        .where(and(eq(videos.id, id), eq(videos.userId, userId)));
+
+      if (!existingVideo) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Video not found",
+        });
+      }
+
+      if (!existingVideo.muxUploadId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Video has no upload ID",
+        });
+      }
+
+      const directUpload = await mux.video.uploads.retrieve(
+        existingVideo.muxUploadId
+      );
+
+      if (!directUpload || !directUpload.asset_id) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Video upload is not completed",
+        });
+      }
+
+      const asset = await mux.video.assets.retrieve(directUpload.asset_id);
+
+      if (!asset) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Failed to retrieve asset",
+        });
+      }
+
+      const playbackId = asset.playback_ids?.[0].id;
+      const duration = asset.duration ? Math.round(asset.duration * 1000) : 0;
+
+      const [updatedVideo] = await db
+        .update(videos)
+        .set({
+          muxPlaybackId: playbackId,
+          muxStatus: asset.status,
+          muxAssetId: asset.id,
+          duration,
+        })
+        .where(and(eq(videos.id, id), eq(videos.userId, userId)))
+        .returning();
+
+      return updatedVideo;
     }),
   restoreThumbnail: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))

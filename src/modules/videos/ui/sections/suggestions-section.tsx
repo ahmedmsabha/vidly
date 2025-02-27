@@ -1,11 +1,53 @@
 "use client";
 
 import { trpc } from "@/trpc/client";
-import { VideoRowCard } from "../components/video-row-card";
-import { VideoGridCard } from "../components/video-grid-card";
+import {
+  VideoRowCard,
+  VideoRowCardSkelton,
+} from "../components/video-row-card";
+import {
+  VideoGridCard,
+  VideoGridCardSkeleton,
+} from "../components/video-grid-card";
 import { InfiniteScroll } from "@/components/infinite-scroll";
+import { DEFAULT_LIMIT } from "@/constants";
+import { Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 
 export function SuggestionsSection({
+  videoId,
+  isManual,
+}: {
+  videoId: string;
+  isManual?: boolean;
+}) {
+  return (
+    <Suspense fallback={<SuggestionsSectionSkelton />}>
+      <ErrorBoundary fallback={<p>Something went wrong...</p>}>
+        <SuggestionsSectionSuspense videoId={videoId} isManual={isManual} />
+      </ErrorBoundary>
+    </Suspense>
+  );
+}
+
+export function SuggestionsSectionSkelton() {
+  return (
+    <>
+      <div className="hidden md:block space-y-3">
+        {Array.from({ length: 6 }).map((_, index) => (
+          <VideoRowCardSkelton key={index} />
+        ))}
+      </div>
+      <div className="block md:hidden space-y-10">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <VideoGridCardSkeleton key={index} />
+        ))}
+      </div>
+    </>
+  );
+}
+
+export function SuggestionsSectionSuspense({
   videoId,
   isManual,
 }: {
@@ -16,7 +58,7 @@ export function SuggestionsSection({
     trpc.suggestions.getMany.useSuspenseInfiniteQuery(
       {
         videoId,
-        limit: 10,
+        limit: DEFAULT_LIMIT,
       },
       {
         getNextPageParam: (lastPage) => lastPage.nextCursor,

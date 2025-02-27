@@ -18,6 +18,7 @@ import {
   Loader2Icon,
   LockIcon,
   MoreVerticalIcon,
+  RefreshCcwIcon,
   RotateCcwIcon,
   SparklesIcon,
   TrashIcon,
@@ -53,6 +54,7 @@ import { THUMBNAIL_FALLBACK } from "@/modules/videos/types";
 import { ThumbnailUploadModel } from "../components/thumbnail-upload-model";
 import { ThumbnailGenerateModel } from "../components/thumbnail-generate-model";
 import { Skeleton } from "@/components/ui/skeleton";
+import { WEBSITE_URL } from "@/constants";
 export function FormSection({ videoId }: { videoId: string }) {
   return (
     <Suspense fallback={<FormSectionSkeleton />}>
@@ -159,6 +161,17 @@ function FormSectionSuspense({ videoId }: { videoId: string }) {
     },
   });
 
+  const revalidate = trpc.videos.revalidate.useMutation({
+    onSuccess: () => {
+      utils.studio.getMany.invalidate();
+      utils.studio.getOne.invalidate({ id: videoId });
+      toast.success("Video revalidated");
+    },
+    onError: () => {
+      toast.error("Something went wrong");
+    }, 
+  });
+
   const generateTitle = trpc.videos.generateTitle.useMutation({
     onSuccess: () => {
       toast.success("Background job started", {
@@ -198,7 +211,7 @@ function FormSectionSuspense({ videoId }: { videoId: string }) {
 
   const [isCopied, setIsCopied] = useState(false);
 
-  const fullUrl = `${process.env.NEXT_PUBLIC_WEBSITE_URL}/videos/${video.id}`;
+  const fullUrl = `${WEBSITE_URL}/videos/${video.id}`;
 
   async function handleCopy() {
     await navigator.clipboard.writeText(fullUrl);
@@ -244,6 +257,12 @@ function FormSectionSuspense({ videoId }: { videoId: string }) {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={() => revalidate.mutate({ id: video.id })}
+                  >
+                    <RefreshCcwIcon className="w-4 h-4 mr-2" />
+                    Re-validate
+                  </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => remove.mutate({ id: video.id })}
                   >
