@@ -3,34 +3,32 @@ import { UploadDropzone } from "@/lib/uploadthing";
 import { trpc } from "@/trpc/client";
 
 import { toast } from "sonner";
-interface ThumbnailUploadModelProps {
-  videoId: string;
+interface BannerUploadModelProps {
+  userId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export const ThumbnailUploadModel = ({
-  videoId,
+export const BannerUploadModel = ({
+  userId,
   open,
   onOpenChange,
-}: ThumbnailUploadModelProps) => {
+}: BannerUploadModelProps) => {
   const utils = trpc.useUtils();
 
   const onUploadComplete = () => {
-    utils.studio.getMany.invalidate();
-    utils.studio.getOne.invalidate({ id: videoId });
+    utils.users.getOne.invalidate({ id: userId });
     onOpenChange(false);
-    toast.success("Thumbnail uploaded successfully");
+    toast.success("Banner uploaded successfully");
   };
   return (
     <ResponsizeDialog
-      title="Upload thumbnail"
+      title="Upload banner"
       open={open}
       onOpenChange={onOpenChange}
     >
       <UploadDropzone
-        endpoint="thumbnailUploader"
-        input={{ videoId }}
+        endpoint="bannerUploader"
         onClientUploadComplete={onUploadComplete}
       />
     </ResponsizeDialog>

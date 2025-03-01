@@ -6,7 +6,16 @@ import {
 } from "@/trpc/init";
 import { videos, videoReactions, playlists, playlistVideos } from "@/db/schema";
 import { db } from "@/db";
-import { desc, and, eq, getTableColumns, lt, or, sql } from "drizzle-orm";
+import {
+  desc,
+  and,
+  eq,
+  getTableColumns,
+  lt,
+  or,
+  sql,
+  inArray,
+} from "drizzle-orm";
 import { users, videoViews } from "@/db/schema";
 import { TRPCError } from "@trpc/server";
 export const playlistsRouter = createTRPCRouter({
@@ -76,26 +85,26 @@ export const playlistsRouter = createTRPCRouter({
       );
 
       // Check if the current user is the owner of the playlist
-      let isOwner = false;
-      if (clerkUserId) {
-        const [userQuery] = await db
-          .select({ id: users.id })
-          .from(users)
-          .where(eq(users.clerkId, clerkUserId))
-          .limit(1);
+      let userId;
 
-        if (userQuery) {
-          const userId = userQuery.id;
-          const [playlistOwnerQuery] = await db
-            .select()
-            .from(playlists)
-            .where(
-              and(eq(playlists.id, playlistId), eq(playlists.userId, userId))
-            );
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(inArray(users.clerkId, clerkUserId ? [clerkUserId] : []));
 
-          isOwner = !!playlistOwnerQuery;
-        }
+      if (user) {
+        userId = user.id;
       }
+
+      const [playlistOwner] = await db
+        .select()
+        .from(playlists)
+        .where(
+          and(
+            eq(playlists.id, playlistId),
+            inArray(playlists.userId, userId ? [userId] : [])
+          )
+        );
 
       const data = await db
         .with(videosInPlaylist)
@@ -123,7 +132,7 @@ export const playlistsRouter = createTRPCRouter({
         .innerJoin(videosInPlaylist, eq(videos.id, videosInPlaylist.videoId))
         .where(
           and(
-            isOwner ? undefined : eq(videos.visibility, "public"),
+            playlistOwner ? undefined : eq(videos.visibility, "public"),
             cursor
               ? or(
                   lt(videos.updatedAt, cursor.updatedAt),
