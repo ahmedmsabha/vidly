@@ -2,6 +2,8 @@ import { serve } from "@upstash/workflow/nextjs";
 import { db } from "@/db";
 import { videos } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
+import { createWorkflowOpenAI } from "@/app/ai/ai-workflow";
+import { generateText } from "ai";
 
 interface InputType {
   userId: string;
@@ -15,7 +17,6 @@ const TITLE_SYSTEM_PROMPT = `Your task is to generate an SEO-focused title for a
 - Use action-oriented phrasing or clear value propositions where applicable.
 - Ensure the title is 3-8 words long and no more than 100 characters.
 - ONLY return the title as plain text. Do not add quotes or any additional formatting.`;
-
 
 export const { POST } = serve(async (context) => {
   const { userId, videoId } = context.requestPayload as InputType;
@@ -43,27 +44,26 @@ export const { POST } = serve(async (context) => {
     return text;
   });
 
-  const { body } = await context.api.openai.call("generate-title", {
-    token: process.env.OPENAI_API_KEY!,
-    operation: "chat.completions.create",
-    body: {
-      model: "gpt-4o",
-      messages: [
-        {
-          role: "system",
-          content: TITLE_SYSTEM_PROMPT,
-        },
-        {
-          role: "user",
-          content: transcript,
-        },
-      ],
-    },
+  const aiModel = createWorkflowOpenAI(context);
+
+  const result = await generateText({
+    model: aiModel("gemini-2.0-flash-001"),
+    maxTokens: 2048,
+    messages: [
+      {
+        role: "system",
+        content: TITLE_SYSTEM_PROMPT,
+      },
+      {
+        role: "user",
+        content: transcript,
+      },
+    ],
   });
 
-  
+
   await context.run("update-video", async () => {
-    const title = body.choices[0]?.message.content;
+    const title = result.text;
 
     if (!title) {
       throw new Error("Bad request");

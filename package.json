@@ -15,6 +15,8 @@
     "seed": "node -r dotenv/config --loader ts-node/esm --experimental-specifier-resolution=node src/scripts/seed-categories.ts"
   },
   "dependencies": {
+    "@ai-sdk/google": "^1.1.17",
+    "@ai-sdk/openai": "^1.1.14",
     "@clerk/nextjs": "^6.11.3",
     "@hookform/resolvers": "^4.1.0",
     "@mux/mux-node": "^9.0.1",
@@ -53,9 +55,11 @@
     "@trpc/react-query": "11.0.0-rc.768",
     "@trpc/server": "11.0.0-rc.768",
     "@uploadthing/react": "^7.3.0",
+    "@upstash/qstash": "^2.7.22",
     "@upstash/ratelimit": "^2.0.5",
     "@upstash/redis": "^1.34.4",
     "@upstash/workflow": "^0.2.9",
+    "ai": "^4.1.46",
     "class-variance-authority": "^0.7.1",
     "client-only": "^0.0.1",
     "clsx": "^2.1.1",

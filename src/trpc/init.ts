@@ -5,7 +5,7 @@ import { users } from "@/db/schema";
 import { initTRPC, TRPCError } from "@trpc/server";
 import { cache } from "react";
 import superjson from "superjson";
-import { rateLimit } from "@/lib/ratelimit";
+import { rateLimit, mutationRateLimit } from "@/lib/ratelimit";
 export const createTRPCContext = cache(async () => {
   const { userId } = await auth();
 
@@ -46,3 +46,29 @@ export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
   }
   return next({ ctx: { ...ctx, user } });
 });
+
+// Separate procedure for mutations with stricter rate limiting
+export const protectedMutationProcedure = t.procedure.use(
+  async ({ ctx, next }) => {
+    if (!ctx.clerkUserId) {
+      throw new TRPCError({ code: "UNAUTHORIZED" });
+    }
+
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.clerkId, ctx.clerkUserId))
+      .limit(1);
+
+    if (!user) {
+      throw new TRPCError({ code: "UNAUTHORIZED" });
+    }
+
+    const { success } = await mutationRateLimit.limit(user.id);
+
+    if (!success) {
+      throw new TRPCError({ code: "TOO_MANY_REQUESTS" });
+    }
+    return next({ ctx: { ...ctx, user } });
+  }
+);

@@ -2,6 +2,9 @@ import { DEFAULT_LIMIT } from "@/constants";
 import PlaylistsView from "@/modules/playlists/ui/views/playlists-view";
 import { HydrateClient } from "@/trpc/server";
 import { trpc } from "@/trpc/server";
+
+export const dynamic = "force-dynamic";
+
 export default async function PlaylistsPage() {
   void trpc.playlists.getMany.prefetchInfinite({
     limit: DEFAULT_LIMIT,

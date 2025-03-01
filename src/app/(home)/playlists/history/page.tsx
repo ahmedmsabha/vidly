@@ -1,8 +1,8 @@
 import { DEFAULT_LIMIT } from "@/constants";
-import HistoryView from "@/modules/playlists/ui/views/history-view";
+import { HistoryView } from "@/modules/playlists/ui/views/history-view";
 import { HydrateClient, trpc } from "@/trpc/server";
 
-// export const dynamic = "force-dynamic";
+export const dynamic = "force-dynamic";
 
 export default async function HistoryPage() {
   void trpc.playlists.getHistory.prefetchInfinite({

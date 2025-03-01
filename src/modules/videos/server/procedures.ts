@@ -349,8 +349,12 @@ export const videosRouter = createTRPCRouter({
         user: { id: userId },
       } = ctx;
 
+      const url = `${process.env
+        .UPSTASH_WORKFLOW_URL!}/api/videos/workflows/title`;
+
+      console.log(url);
       const { workflowRunId } = await workflow.trigger({
-        url: `${process.env.UPSTASH_WORKFLOW_URL}/api/videos/workflows/title`,
+        url,
         body: { userId, videoId },
       });
       return workflowRunId;
@@ -363,8 +367,11 @@ export const videosRouter = createTRPCRouter({
         user: { id: userId },
       } = ctx;
 
+      const url = `${process.env
+        .UPSTASH_WORKFLOW_URL!}/api/videos/workflows/description`;
+
       const { workflowRunId } = await workflow.trigger({
-        url: `${process.env.UPSTASH_WORKFLOW_URL}/api/videos/workflows/description`,
+        url,
         body: { userId, videoId },
       });
       return workflowRunId;
@@ -377,8 +384,13 @@ export const videosRouter = createTRPCRouter({
         user: { id: userId },
       } = ctx;
 
+      const url = `${process.env
+        .UPSTASH_WORKFLOW_URL!}/api/videos/workflows/thumbnail`;
+
+      console.log(url);
+
       const { workflowRunId } = await workflow.trigger({
-        url: `${process.env.UPSTASH_WORKFLOW_URL}/api/videos/workflows/thumbnail`,
+        url,
         body: { userId, videoId, prompt },
       });
       return workflowRunId;
