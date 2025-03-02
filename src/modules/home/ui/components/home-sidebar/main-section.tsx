@@ -52,7 +52,11 @@ export function MainSection() {
                   }
                 }}
               >
-                <Link href={item.href} className="flex items-center gap-4">
+                <Link
+                  prefetch
+                  href={item.href}
+                  className="flex items-center gap-4"
+                >
                   <item.icon />
                   <span className="text-sm font-medium">{item.title}</span>
                 </Link>

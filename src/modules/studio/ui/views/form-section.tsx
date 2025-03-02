@@ -169,7 +169,7 @@ function FormSectionSuspense({ videoId }: { videoId: string }) {
     },
     onError: () => {
       toast.error("Something went wrong");
-    }, 
+    },
   });
 
   const generateTitle = trpc.videos.generateTitle.useMutation({
@@ -448,7 +448,7 @@ function FormSectionSuspense({ videoId }: { videoId: string }) {
                   <div className="flex flex-col gap-y-1">
                     <p className="text-xs text-muted-foreground">Video Link</p>
                     <div className="flex items-center gap-x-2">
-                      <Link href={`/videos/${video.id}`}>
+                      <Link prefetch href={`/videos/${video.id}`}>
                         <p className="text-sm line-clamp-1 text-blue-500">
                           {fullUrl}
                         </p>

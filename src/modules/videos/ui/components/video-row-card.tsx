@@ -113,7 +113,7 @@ export function VideoRowCard({
       </Link>
       <div className="flex-1 min-w-0">
         <div className="flex justify-between gap-2">
-          <Link href={`/videos/${video.id}`}>
+          <Link prefetch href={`/videos/${video.id}`}>
             <h3
               className={cn(
                 "font-medium line-clamp-2",

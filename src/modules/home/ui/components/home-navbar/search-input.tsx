@@ -4,7 +4,18 @@ import { SearchIcon, XIcon } from "lucide-react";
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { WEBSITE_URL } from "@/constants";
+import React from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+
 export function SearchInput() {
+  return (
+    <React.Suspense fallback={<Skeleton className="w-full h-10" />}>
+      <SearchInputSuspense />
+    </React.Suspense>
+  );
+}
+
+function SearchInputSuspense() {
   const searchParams = useSearchParams();
   const query = searchParams.get("query") || "";
   const categoryId = searchParams.get("categoryId") || "";

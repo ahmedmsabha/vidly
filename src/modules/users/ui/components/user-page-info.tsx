@@ -74,7 +74,9 @@ export function UserPageInfo({ user }: UserPageInfoProps) {
               asChild
               className="w-full mt-3 rounded-full"
             >
-              <Link href="/studio">Go to Studio</Link>
+              <Link prefetch href="/studio">
+                Go to Studio
+              </Link>
             </Button>
           </div>
         ) : (
@@ -117,7 +119,9 @@ export function UserPageInfo({ user }: UserPageInfoProps) {
                   asChild
                   className="mt-3 rounded-full"
                 >
-                  <Link href="/studio">Go to Studio</Link>
+                  <Link prefetch href="/studio">
+                    Go to Studio
+                  </Link>
                 </Button>
               </div>
             ) : (
