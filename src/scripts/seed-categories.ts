@@ -1,5 +1,3 @@
-//TODO: Add categories to the database
-
 import { db } from "../db";
 import { categories } from "../db/schema";
 
